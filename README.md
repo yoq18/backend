@@ -2,7 +2,7 @@
 
 ## Install
 
-* First, you have to run the following install code inside this folder ("express-beer-api")
+* First, you have to run the following install code inside this folder ("express-ebay-api")
 
 ```bash
 --> COMMAND: "npm install"

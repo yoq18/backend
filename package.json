@@ -1,0 +1,15 @@
+{
+  "name": "wwi2020b-webprogrammierung-ebay-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "authors": "Maximilian Schmid, Leonadro D'Avanzo & Julian Dobrick",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "cors": "^2.8.5"
+  }
+}

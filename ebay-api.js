@@ -141,6 +141,11 @@ function getArticle(title) {
     return articles.find((article) => article.title === title);
 }
 
+//function to get the correct Article with UUID;
+function getArticlewithUUID(uuid) {
+    return articles.find((article) => article.uuid === uuid);
+}
+
 //function for no result --> ERROR 404;
 function resolveNotFound(res, message) {
     res.statusCode = 404;

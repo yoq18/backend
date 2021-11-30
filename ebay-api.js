@@ -1,3 +1,4 @@
+// Backend ebay-api
 // Integrations
 const express = require('express'); //Express integration
 const cors = require("cors"); //cors integration
@@ -63,8 +64,8 @@ app.post('/article', (req, res) => {
     if (!req.body.hasOwnProperty('title')) {
         resolveBadRequest(res, 'Missing the "title" property');
     }
-    if (!req.body.hasOwnProperty('Unique-ID')) {
-        resolveBadRequest(res, 'Missing the "Unique-ID" property');
+    if (!req.body.hasOwnProperty('uuid')) {
+        resolveBadRequest(res, 'Missing the "uuid" property');
     }
     if (!req.body.hasOwnProperty('start_price')) {
         resolveBadRequest(res, 'Missing the "start_price" property');

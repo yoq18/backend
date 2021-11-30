@@ -46,11 +46,26 @@ app.get('/articles', (req, res) => {
 });
 
 //2. GET-Method for one specific article/:title;
+/* 
 app.get('/article/:title', (req, res) => {
     const { title } = req.params;
     const article = getArticle(title); 
     if (!article) { //search with "title" property --> UUID wäre auch möglich?
         resolveNotFound(res, `The specific ${title} not found`)
+    } else {
+        res.statusCode = 200;
+        res.json(article);
+        res.end();
+    }
+})
+*/
+
+// TESTEINTRAG! --> FUNKTIONIERT! 
+app.get('/article/:uuid', (req, res) => {
+    const { uuid } = req.params;
+    const article = getArticlewithUUID(uuid); 
+    if (!article) { //search with "uuid" property
+        resolveNotFound(res, `The specific ${uuid} not found`)
     } else {
         res.statusCode = 200;
         res.json(article);

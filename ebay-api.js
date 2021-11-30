@@ -23,7 +23,6 @@ const logger = (req, res, next) => {
 }
 app.use(logger);
 
-
 /*
 REST-API with:
     1. GET /articles - return all articles;
@@ -45,22 +44,7 @@ app.get('/articles', (req, res) => {
     }
 });
 
-//2. GET-Method for one specific article/:title;
-/* 
-app.get('/article/:title', (req, res) => {
-    const { title } = req.params;
-    const article = getArticle(title); 
-    if (!article) { //search with "title" property --> UUID wäre auch möglich?
-        resolveNotFound(res, `The specific ${title} not found`)
-    } else {
-        res.statusCode = 200;
-        res.json(article);
-        res.end();
-    }
-})
-*/
-
-// TESTEINTRAG! --> FUNKTIONIERT! 
+//2. GET-Method for one specific article/:uuid;
 app.get('/article/:uuid', (req, res) => {
     const { uuid } = req.params;
     const article = getArticlewithUUID(uuid); 
@@ -74,27 +58,32 @@ app.get('/article/:uuid', (req, res) => {
 })
 
 // 3. POST-Method for creating one specific article;
-// UUID, title, start_price, period, description 
+// UUID, title, start_price and description as required fields; 
 app.post('/article', (req, res) => {
-    if (!req.body.hasOwnProperty('title')) {
+    if (!req.body.hasOwnProperty('title')) { //query whether title exists
         resolveBadRequest(res, 'Missing the "title" property');
     }
-    if (!req.body.hasOwnProperty('uuid')) {
+    if (!req.body.hasOwnProperty('uuid')) { //query whether uuid exists
         resolveBadRequest(res, 'Missing the "uuid" property');
     }
-    if (!req.body.hasOwnProperty('start_price')) {
+    if (!req.body.hasOwnProperty('start_price')) { //query whether start_price exists
         resolveBadRequest(res, 'Missing the "start_price" property');
     }
-    if (!req.body.hasOwnProperty('description')) {
+    if (!req.body.hasOwnProperty('description')) { //query whether description exists
         resolveBadRequest(res, 'Missing the "description" property');
     }
-    articles.push(req.body);
-    res.statusCode = 200;
-    res.json(req.body);
+
+    // if all queries available push them and statusCode 'ok';
+    if (req.body.hasOwnProperty('uuid') && req.body.hasOwnProperty('title') &&
+            req.body.hasOwnProperty('start_price') && req.body.hasOwnProperty('description')) {
+                articles.push(req.body);
+                res.statusCode = 200;
+                res.json(req.body);
+    }
 });
 
 // 4. DELETE-Method for deleting one article:title;
-// VLLT doch besser nach UUID zu suchen (eindeutige suchnummer --> title kann öfter vorkommen)
+// VLLT doch besser nach UUID zu suchen (eindeutige suchnummer --> title kann öfter vorkommen);
 app.delete('/article/:title', (req, res) => {
     const { title } = req.params;
     if (!title) {
@@ -136,7 +125,7 @@ function getProductIndex(title) {
     return articles.findIndex((article) => article.title === title);
 }
 
-//function to get the correct Article;
+//function to get the correct Article with the title property; --> delete (veraltet)
 function getArticle(title) {
     return articles.find((article) => article.title === title);
 }

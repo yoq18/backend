@@ -1,7 +1,9 @@
 // Backend ebay-api
+
 // Integrations
-const express = require('express'); //Express integration
-const cors = require("cors"); //cors integration
+const express = require('express'); // Express integration
+const cors = require("cors"); // cors integration
+const mysql = require("mysql"); // mysql integration
 
 const app = express();
 const port = 8080;
@@ -13,7 +15,7 @@ app.use(cors());
 // Array for the articles
 const articles = [];
 
-//Logging on the console
+// Logging on the console
 const logger = (req, res, next) => {
     console.log(`Received Request ${new Date(Date.now()).toLocaleString('de-DE')}`);
     console.log('HTTP METHOD', req.method);
@@ -22,6 +24,23 @@ const logger = (req, res, next) => {
     next();
 }
 app.use(logger);
+
+// Create connection to database;
+/* const db = mysql.createConnection({
+    host: '',
+    user: '',
+    password: ''
+})
+
+
+// Connection to MySQL;
+db.connect(err => {
+    if (err) {          // throw exception
+        throw err;
+    }
+    console.log('MySQL connected')
+})
+*/
 
 /*
 REST-API with:
@@ -32,11 +51,11 @@ REST-API with:
     5. PUT /article/:id - update a specific article;
 */
 
-//1. GET-Method for all articles;
+// 1. GET-Method for all articles;
 app.get('/articles', (req, res) => {
     if (articles.length === 0) {
         resolveNotFound(res, `No articles found! Please create one. 
-                            - To create one use the POST-Method please.`) //with `` multiline string
+                            - To create one use the POST-Method please.`) // with `` multiline string
     } else {
         res.statusCode = 200;
         res.json(articles);
@@ -44,11 +63,11 @@ app.get('/articles', (req, res) => {
     }
 });
 
-//2. GET-Method for one specific article/:uuid;
+// 2. GET-Method for one specific article/:uuid;
 app.get('/article/:uuid', (req, res) => {
     const { uuid } = req.params;
     const article = getArticlewithUUID(uuid); 
-    if (!article) { //search with "uuid" property
+    if (!article) { // search with "uuid" property
         resolveNotFound(res, `The specific ${uuid} not found`)
     } else {
         res.statusCode = 200;
@@ -60,16 +79,16 @@ app.get('/article/:uuid', (req, res) => {
 // 3. POST-Method for creating one specific article;
 // UUID, title, start_price and description as required fields; 
 app.post('/article', (req, res) => {
-    if (!req.body.hasOwnProperty('title')) { //query whether title exists
+    if (!req.body.hasOwnProperty('title')) { // query whether title exists
         resolveBadRequest(res, 'Missing the "title" property');
     }
-    if (!req.body.hasOwnProperty('uuid')) { //query whether uuid exists
+    if (!req.body.hasOwnProperty('uuid')) { // query whether uuid exists
         resolveBadRequest(res, 'Missing the "uuid" property');
     }
-    if (!req.body.hasOwnProperty('start_price')) { //query whether start_price exists
+    if (!req.body.hasOwnProperty('start_price')) { // query whether start_price exists
         resolveBadRequest(res, 'Missing the "start_price" property');
     }
-    if (!req.body.hasOwnProperty('description')) { //query whether description exists
+    if (!req.body.hasOwnProperty('description')) { // query whether description exists
         resolveBadRequest(res, 'Missing the "description" property');
     }
 
@@ -117,25 +136,25 @@ app.put('/article/:title', (req, res) => {
 
 // Console-Output
 app.listen(port, () => {
-    console.log('Running...');
+    console.log('Running on Port 8080...');
 });
 
-//function to get the ProductIndex
+// function to get the ProductIndex
 function getProductIndex(title) {
     return articles.findIndex((article) => article.title === title);
 }
 
-//function to get the correct Article with the title property; --> delete (veraltet)
+// function to get the correct Article with the title property; --> delete (veraltet)
 function getArticle(title) {
     return articles.find((article) => article.title === title);
 }
 
-//function to get the correct Article with UUID;
+// function to get the correct Article with UUID;
 function getArticlewithUUID(uuid) {
     return articles.find((article) => article.uuid === uuid);
 }
 
-//function for no result --> ERROR 404;
+// function for no result --> ERROR 404;
 function resolveNotFound(res, message) {
     res.statusCode = 404;
     res.send(message);
@@ -143,7 +162,7 @@ function resolveNotFound(res, message) {
     return;
 }
 
-//function for bad request --> ERROR 400;
+// function for bad request --> ERROR 400;
 function resolveBadRequest(res, message) {
     res.statusCode = 400;
     res.send(message);

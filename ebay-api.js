@@ -61,6 +61,10 @@ app.get("/", (req, res) => {
     res.render("index", { title: "LandingPage" })
 });
 
+app.get("/sell", (req, res) => {
+    res.render("sellforms", { title: "SellForm" })
+});
+
 // 1. GET-Method for all articles;
 app.get('/articles', (req, res) => {
     if (articles.length === 0) {

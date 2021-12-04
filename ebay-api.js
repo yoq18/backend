@@ -7,10 +7,15 @@ const mysql = require("mysql"); // mysql integration
 
 const app = express();
 const port = 8080;
+const path = require('path');
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
+
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "pug");
 
 // Array for the articles
 const articles = [];
@@ -25,10 +30,11 @@ const logger = (req, res, next) => {
 }
 app.use(logger);
 
+/*
 // Create connection to database;
-/* const db = mysql.createConnection({
-    host: '',
-    user: '',
+ const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
     password: ''
 })
 
@@ -51,6 +57,10 @@ REST-API with:
     5. PUT /article/:id - update a specific article;
 */
 
+app.get("/", (req, res) => {
+    res.render("index", { title: "LandingPage" })
+});
+
 // 1. GET-Method for all articles;
 app.get('/articles', (req, res) => {
     if (articles.length === 0) {
@@ -62,6 +72,7 @@ app.get('/articles', (req, res) => {
         res.end();
     }
 });
+
 
 // 2. GET-Method for one specific article/:uuid;
 app.get('/article/:uuid', (req, res) => {

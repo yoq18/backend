@@ -1,8 +1,15 @@
-# Ebay API Sample
+# WHATIBUY API
+
+## Information
+
+WHATiBuy is a webproject from Maximilian Schmid, Leonardo D'Avanzo and Julian Dobrick.
+https://github.com/McSchmiddy/wwi2020b-ebay-api
 
 ## Install
 
-* First, you have to run the following install code inside this folder ("express-ebay-api")
+* First, you have to install node.js on your computer.
+
+* Then run the following install code inside this folder ("express-ebay-api")
 
 ```bash
 --> COMMAND: "npm install"
@@ -15,6 +22,14 @@
 ```bash
 -->COMMAND: "node ebay-api.js"
 ```
+
+## Database
+
+For the database we used PostgreSQL in the version 14.1.
+You can download PostgreSQL here: https://www.postgresql.org/download/ 
+
+* For testing the database, you can use the XXX-file. It's an export from the database with some testarticles.
+
 
 ## Postman Collection
 

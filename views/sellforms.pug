@@ -1,19 +1,38 @@
-title SellForms
-<form action="/article" method="post">
-    <p> 
-    <label for="uuid">Enter UUID: </label>
-    <input id="uuid" type="number" name="uuid" value="uuid">
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
 
-    <p>
-    <label for="title">Enter title: </label>
-    <input id="title" type="text" name="title" value="title">
+<div id="container">
+  <h1>&bull; advertise an article &bull;</h1>
+  <div class="underline">
+  </div>
 
-    <p>
-    <label for="start_price">Enter start-price: </label>
-    <input id="start_price" type="number" step="0.5" name="start_price" value="start_price">
+  <form action="/article" method="post" enctype="multipart/form-data">
+    <div class="uuid">
+      <label for="uuid"></label>
+      <input type="number" placeholder="UUID" name="uuid" id="uuid" required>
+    </div>
 
-    <p>
-    <label for="description">Enter description: </label>
-    <input id="description" type="text" name="description" value="description">
-    <input type="submit" value="OK"> </p>
-</form>
+    <div class="title">
+      <label for="title"></label>
+      <input type="title" placeholder="title" name="title" id="title" required>
+    </div>
+
+    <div class="start_price">
+      <label for="name"></label>
+      <input type="number" step="0.5" placeholder="start price is" name="start_price" id="start_price" required>
+    </div>
+
+    <div class="description">
+      <label for="description"></label>
+      <textarea name="description" placeholder="Description for the new article" cols="30" rows="5" required></textarea>
+    </div>
+
+    <div class="picture">
+      <input type="file" placeholder="picture" name="picture" id="picture">
+    </div>
+
+    <div class="submit">
+      <input type="submit" value="Create article" id="form_button" />
+    </div>
+    
+  </form><!-- // End form -->
+</div><!-- // End #container -->

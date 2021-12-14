@@ -1,26 +1,32 @@
-// Backend ebay-api
+/** This file is the backend with node.js*/
 
 // Integrations
 const express = require('express'); // Express integration
 const cors = require("cors"); // cors integration
-const mysql = require("mysql"); // mysql integration
+const client = require('./connection.js') // integrates the connection.js file
+const multer = require('multer'); // node.js middleware for handling multipart/form-data (uploading-files)
+const path = require('path'); //
+const fs = require('fs'); // node.js middleware for handling with the file system
 
 const app = express();
 const port = 8080;
-const path = require('path');
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(multer({dest: '/uploads'}).any()); // definition for a temporary directory (C:/uploads);
 
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "pug");
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+
+// connection to the database in postgresql;
+client.connect();
 
 // Array for the articles
 const articles = [];
 
-// Logging on the console
+// Logging to the console
 const logger = (req, res, next) => {
     console.log(`Received Request ${new Date(Date.now()).toLocaleString('de-DE')}`);
     console.log('HTTP METHOD', req.method);
@@ -30,23 +36,14 @@ const logger = (req, res, next) => {
 }
 app.use(logger);
 
-/*
-// Create connection to database;
- const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: ''
-})
+// Routes
+app.get("/", (req, res) => {
+    res.render("index", { title: "Home" })
+});
 
-
-// Connection to MySQL;
-db.connect(err => {
-    if (err) {          // throw exception
-        throw err;
-    }
-    console.log('MySQL connected')
-})
-*/
+app.get("/sell", (req, res) => {
+    res.render("sellforms", { title: "SellForm" })
+});
 
 /*
 REST-API with:
@@ -57,15 +54,8 @@ REST-API with:
     5. PUT /article/:id - update a specific article;
 */
 
-app.get("/", (req, res) => {
-    res.render("index", { title: "LandingPage" })
-});
-
-app.get("/sell", (req, res) => {
-    res.render("sellforms", { title: "SellForm" })
-});
-
-// 1. GET-Method for all articles;
+/* OHNE DATENBANKANBINDUNG!
+// 1. GET-Method for getting all articles;
 app.get('/articles', (req, res) => {
     if (articles.length === 0) {
         resolveNotFound(res, `No articles found! Please create one. 
@@ -76,8 +66,19 @@ app.get('/articles', (req, res) => {
         res.end();
     }
 });
+*/
 
+// 1. GET-Method for getting all articles from database;
+app.get('/articles', (req, res)=>{
+    client.query(`SELECT * FROM articles`, (err, result)=>{
+        if(!err){
+            res.send(result.rows);
+        }
+    });
+    client.end;
+})
 
+/* OHNE DATENBANKANBINDUNG!
 // 2. GET-Method for one specific article/:uuid;
 app.get('/article/:uuid', (req, res) => {
     const { uuid } = req.params;
@@ -91,6 +92,19 @@ app.get('/article/:uuid', (req, res) => {
     }
 })
 
+*/
+
+// 2. GET-Method for one specific article/:uuid from database;
+app.get('/article/:uuid', (req, res)=>{
+    client.query(`SELECT * FROM articles WHERE uuid=${req.params.uuid}`, (err, result)=>{
+        if(!err){
+            res.send(result.rows);
+        }
+    });
+    client.end;
+})
+
+/* OHNE DATENBANKANBINDUNG!
 // 3. POST-Method for creating one specific article;
 // UUID, title, start_price and description as required fields; 
 app.post('/article', (req, res) => {
@@ -115,7 +129,37 @@ app.post('/article', (req, res) => {
                 res.json(req.body);
     }
 });
+*/
 
+// 3. POST-Method for creating one specific article from database;
+app.post('/article', (req, res)=> {
+    var readfile = req.files[0].path; //TEST for uploading a picture;
+    var writefile = __dirname + "/" + req.files[0].originalname;
+    fs.readFile(readfile, function(err, data) {
+        fs.writeFile(writefile, data, function(err) {
+            if (err) throw err;
+        });
+    });
+
+    // Writing into the database;
+    const article = req.body;
+    let insertQuery = `INSERT INTO articles (uuid, title, start_price, description) 
+                       values(${article.uuid}, '${article.title}', '${article.start_price}', '${article.description}')`
+
+    client.query(insertQuery, (err, result)=>{
+        if(!err){
+            res.send('Insertion into the database was successful!');
+        }
+        else { 
+            console.log(err.message);
+            resolveBadRequest(res, 'Missing some property! You NEED uuid, title, description and start_price');
+        }
+    })
+    res.send(req.files[0].originalname);
+    client.end;
+})
+
+/* OHNE DATENBANKANBINDUNG!
 // 4. DELETE-Method for deleting one article:title;
 // VLLT doch besser nach UUID zu suchen (eindeutige suchnummer --> title kann öfter vorkommen);
 app.delete('/article/:title', (req, res) => {
@@ -132,7 +176,25 @@ app.delete('/article/:title', (req, res) => {
         resolveNotFound(res, `The specific ${title} not found`);
     }
 })
+*/
 
+// 4. DELETE-Method for deleting one specifi article:uuid from the database;
+app.delete('/article/:uuid', (req, res)=> {
+    let insertQuery = `DELETE FROM articles WHERE uuid=${req.params.uuid}`
+
+    client.query(insertQuery, (err, result)=>{
+        if(!err){
+            res.send('Deletion from database was successful');
+        }
+        else { 
+            console.log(err.message);
+            resolveNotFound(res, `The specific ${uuid} was NOT found`);
+         }
+    })
+    client.end;
+})
+
+/* OHNE DATENBANKANBINDUNG!
 // 5. PUT-Method for updating one article/:title description;
 app.put('/article/:title', (req, res) => {
     const { title } = req.params;
@@ -148,27 +210,53 @@ app.put('/article/:title', (req, res) => {
         resolveNotFound(res, `The specific ${title} not found`);
     }
 })
+*/
+
+// 5. PUT-Method for updating one article/:uuid description from the database "articles";
+app.put('/article/:uuid', (req, res)=> {
+    let user = req.body;
+    let updateQuery = `UPDATE articles
+                       SET title = '${article.title}',
+                       start_price = '${article.start_price}',
+                       description = '${article.description}'
+                       WHERE uuid = ${article.uuid}`
+
+    client.query(updateQuery, (err, result)=>{
+        if(!err){
+            res.send('Update was successful');
+        }
+        else 
+        { 
+            console.log(err.message);
+        }
+    })
+    client.end;
+})
 
 // Console-Output
-app.listen(port, () => {
-    console.log('Running on Port 8080...');
+app.listen(port, function() {
+    console.log(`Running on localhost Port 8080... \n Visit your Browser or Postman! \n`);
 });
 
-// function to get the ProductIndex
+
+// funktionen sind eigentlich NICHT mehr relevant!
+// function to get the ProductIndex (veraltete Lösung)
 function getProductIndex(title) {
     return articles.findIndex((article) => article.title === title);
 }
 
-// function to get the correct Article with the title property; --> delete (veraltet)
+// function to get the correct Article with the title property; (veraltete Lösung)
 function getArticle(title) {
     return articles.find((article) => article.title === title);
 }
 
-// function to get the correct Article with UUID;
+// function to get the correct Article with UUID; (veraltete Lösung)
 function getArticlewithUUID(uuid) {
     return articles.find((article) => article.uuid === uuid);
 }
 
+// *************************************************************************************
+// Die Funktionen sind wieder nützlich! --> werden gebraucht!
 // function for no result --> ERROR 404;
 function resolveNotFound(res, message) {
     res.statusCode = 404;

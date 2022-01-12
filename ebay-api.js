@@ -1,12 +1,9 @@
-/** This file is the backend with node.js*/
+/** This file is the backend with node.js and express */
 
 // Integrations
-const express = require('express'); // Express integration
-const cors = require("cors"); // cors integration
-const client = require('./connection.js') // integrates the connection.js file
-const multer = require('multer'); // node.js middleware for handling multipart/form-data (uploading-files)
-const path = require('path'); //
-const fs = require('fs'); // node.js middleware for handling with the file system
+const express = require('express'); // express integration;
+const cors = require("cors"); // cors integration;
+const client = require('./connection.js') // integrates the connection.js file;
 
 const app = express();
 const port = 8080;
@@ -14,11 +11,6 @@ const port = 8080;
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(multer({dest: '/uploads'}).any()); // definition for a temporary directory (C:/uploads);
-
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
 
 // connection to the database in postgresql;
 client.connect();
@@ -26,7 +18,9 @@ client.connect();
 // Array for the articles
 const articles = [];
 
-// Logging to the console
+/* --> FEHLER (CORS header 'Access-Control-Allow-Origin' does not match 'xyz')
+
+// Logging to the console;
 const logger = (req, res, next) => {
     console.log(`Received Request ${new Date(Date.now()).toLocaleString('de-DE')}`);
     console.log('HTTP METHOD', req.method);
@@ -35,15 +29,16 @@ const logger = (req, res, next) => {
     next();
 }
 app.use(logger);
+*/
 
-// Routes
-app.get("/", (req, res) => {
-    res.render("index", { title: "Home" })
-});
+// Header-Informations for the browser;
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers');
+    next()
+})
 
-app.get("/sell", (req, res) => {
-    res.render("sellforms", { title: "SellForm" })
-});
 
 /*
 REST-API with:
@@ -69,12 +64,24 @@ app.get('/articles', (req, res) => {
 */
 
 // 1. GET-Method for getting all articles from database;
-app.get('/articles', (req, res)=>{
-    client.query(`SELECT * FROM articles`, (err, result)=>{
-        if(!err){
-            res.send(result.rows);
-        }
-    });
+app.get('/articles', async (req, res)=>{
+    // client.query(`SELECT * FROM articles`, (err, result)=>{
+    //    if(!err){
+    //        console.log("result");
+    //       console.log(result.rows);
+    //        res.json(result.rows);
+    //    }
+    // });
+
+    // NEU
+    const result = await client.query({
+        rowMode: "object", // NICHT Text, sondern Object für Anzeige von fields und rows
+        text: "SELECT * FROM articles"
+    })
+
+    console.log(result)
+    res.json(result.rows)
+
     client.end;
 })
 
@@ -133,14 +140,6 @@ app.post('/article', (req, res) => {
 
 // 3. POST-Method for creating one specific article from database;
 app.post('/article', (req, res)=> {
-    var readfile = req.files[0].path; //TEST for uploading a picture;
-    var writefile = __dirname + "/" + req.files[0].originalname;
-    fs.readFile(readfile, function(err, data) {
-        fs.writeFile(writefile, data, function(err) {
-            if (err) throw err;
-        });
-    });
-
     // Writing into the database;
     const article = req.body;
     let insertQuery = `INSERT INTO articles (uuid, title, start_price, description) 
@@ -148,14 +147,15 @@ app.post('/article', (req, res)=> {
 
     client.query(insertQuery, (err, result)=>{
         if(!err){
-            res.send('Insertion into the database was successful!');
+            res.send(`Insertion into the database was successful!
+                        Please go back to the Mainpage!
+            `);
         }
         else { 
             console.log(err.message);
             resolveBadRequest(res, 'Missing some property! You NEED uuid, title, description and start_price');
         }
     })
-    res.send(req.files[0].originalname);
     client.end;
 })
 
@@ -237,18 +237,6 @@ app.put('/article/:uuid', (req, res)=> {
 app.listen(port, function() {
     console.log(`Running on localhost Port 8080... \n Visit your Browser or Postman! \n`);
 });
-
-
-// funktionen sind eigentlich NICHT mehr relevant!
-// function to get the ProductIndex (veraltete Lösung)
-function getProductIndex(title) {
-    return articles.findIndex((article) => article.title === title);
-}
-
-// function to get the correct Article with the title property; (veraltete Lösung)
-function getArticle(title) {
-    return articles.find((article) => article.title === title);
-}
 
 // function to get the correct Article with UUID; (veraltete Lösung)
 function getArticlewithUUID(uuid) {

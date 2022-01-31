@@ -63,7 +63,7 @@ app.get('/articles', (req, res) => {
 });
 
 
-
+//testpush
 // OHNE DATENBANKANBINDUNG!
 // 2. GET-Method for one specific article/:uuid;
 app.get('/article/:uuid', (req, res) => {
